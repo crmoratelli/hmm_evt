@@ -1,0 +1,7 @@
+environment,severity,runs,median_degraded_occupancy,median_episodes,median_max_episode_us
+container,degradação moderada,1,0.0004599954000459,6.0,100000.0
+container,degradação severa,7,0.036339636603633804,71.0,2145000.0
+container,sem degradação material,2,0.0,0.0,0.0
+host,degradação moderada,3,0.0020899791002088,25.0,200000.0
+host,degradação severa,6,0.0305872425195269,76.0,2292500.0
+host,sem degradação material,1,0.0,0.0,0.0

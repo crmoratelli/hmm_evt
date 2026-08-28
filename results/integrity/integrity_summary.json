@@ -1,0 +1,12 @@
+{
+  "files": 260,
+  "status_counts": {
+    "ok": 260
+  },
+  "required_columns": [
+    "release_ns",
+    "finish_ns",
+    "response_ns",
+    "lateness_ns"
+  ]
+}

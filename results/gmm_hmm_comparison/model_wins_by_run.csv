@@ -1,0 +1,11 @@
+view,environment,model,order,run_wins
+raw,container,gaussian_hmm,4,1
+raw,container,gaussian_hmm,5,9
+raw,host,gaussian_gmm,5,1
+raw,host,gaussian_hmm,5,9
+stable,container,gaussian_hmm,4,1
+stable,container,gaussian_hmm,5,8
+stable,container,iid_gaussian,1,1
+stable,host,gaussian_gmm,4,1
+stable,host,gaussian_gmm,5,2
+stable,host,gaussian_hmm,5,7
