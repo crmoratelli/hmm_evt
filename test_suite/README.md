@@ -7,6 +7,12 @@ host/container controls. It uses `containerd + nerdctl + runc`, namespace
 seeded randomized schedule, synchronized circular ftrace capture, and
 low-frequency system telemetry.
 
+On `cylon`, managed NVMe MSI-X vectors 90, 107, 115, 123, and 131 cannot be
+retargeted. A 30-second I/O stress probe produced zero interrupts on all five.
+The validation gate therefore accepts them only while their cumulative counts
+remain zero. Every observation stores before/after snapshots and is marked
+`INVALID_IRQ_ACTIVITY` if any counter changes.
+
 ## Experimental unit
 
 One observation is exactly one tuple:
@@ -44,6 +50,11 @@ irqaffinity=0-2,4-10,12-15
 The machine must be dedicated: `kubelet` inactive, no tasks in `k8s.io`, and
 `containerd` active. Required packages include `stress-ng`, `trace-cmd`,
 `linux-tools`, `gcc`, `make`, `python3`, `nerdctl`, and BuildKit for the build.
+The setup also restricts global unbound workqueues to the housekeeping CPUs.
+
+The IRQ exception list is machine-specific and defaults to
+`MANAGED_DORMANT_IRQS=90,107,115,123,131`. Do not reuse it on another machine
+without repeating the IRQ ownership and activity probe.
 
 ## Preparation
 

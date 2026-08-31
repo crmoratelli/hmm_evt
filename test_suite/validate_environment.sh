@@ -42,18 +42,41 @@ if [[ -r /sys/devices/system/cpu/cpufreq/boost ]]; then
 fi
 
 irq_offenders=()
+unexpected_irq_offenders=()
 for affinity in /proc/irq/[0-9]*/effective_affinity_list; do
   [[ -r "${affinity}" ]] || continue
   cpus="$(cat "${affinity}")"
   if cpulist_contains "${cpus}" "${CPU_RT}" || cpulist_contains "${cpus}" "${CPU_SIBLING}"; then
-    irq_offenders+=("${affinity%/effective_affinity_list}:${cpus}")
+    irq_dir="${affinity%/effective_affinity_list}"
+    irq="${irq_dir##*/}"
+    total="$(irq_total "${irq}")"
+    irq_offenders+=("IRQ ${irq}: CPUs=${cpus}, total=${total}")
+    if ! list_contains_csv "${MANAGED_DORMANT_IRQS}" "${irq}" || [[ "${total}" != 0 ]]; then
+      unexpected_irq_offenders+=("IRQ ${irq}: CPUs=${cpus}, total=${total}")
+    fi
   fi
 done
 if ((${#irq_offenders[@]})); then
-  printf 'IRQ affinity offenders:\n%s\n' "${irq_offenders[*]}" >&2
-  fail=1
+  printf 'Managed IRQs on isolated CPUs:\n' >&2
+  printf '  %s\n' "${irq_offenders[@]}" >&2
+  if ((${#unexpected_irq_offenders[@]})); then
+    printf 'Unexpected or active IRQ offenders:\n' >&2
+    printf '  %s\n' "${unexpected_irq_offenders[@]}" >&2
+    fail=1
+  else
+    ok "only audited dormant managed IRQs use CPUs ${CPU_RT},${CPU_SIBLING}"
+  fi
 else
   log "OK: device IRQs exclude CPUs ${CPU_RT},${CPU_SIBLING}"
+fi
+
+if [[ -r /sys/devices/virtual/workqueue/cpumask ]]; then
+  workqueue_cpus="$(cat /sys/devices/virtual/workqueue/cpumask)"
+  if cpulist_contains "${workqueue_cpus}" "${CPU_RT}" || cpulist_contains "${workqueue_cpus}" "${CPU_SIBLING}"; then
+    bad "unbound workqueue mask includes CPUs ${CPU_RT},${CPU_SIBLING}: ${workqueue_cpus}"
+  else
+    ok "unbound workqueues restricted to housekeeping CPUs"
+  fi
 fi
 
 tracefs="$(tracefs_path)" || die "tracefs is unavailable"

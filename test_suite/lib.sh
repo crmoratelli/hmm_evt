@@ -73,3 +73,55 @@ cpulist_contains() {
   done
   return 1
 }
+
+list_contains_csv() {
+  local list="$1" target="$2" item
+  local -a items=()
+  IFS=',' read -r -a items <<< "${list}"
+  for item in "${items[@]}"; do
+    [[ "${item}" == "${target}" ]] && return 0
+  done
+  return 1
+}
+
+irq_total() {
+  local irq="$1"
+  awk -v key="${irq}:" '
+    $1 == key {
+      total=0
+      for (i=2; i<=NF && $i ~ /^[0-9]+$/; i++) total += $i
+      print total
+      found=1
+    }
+    END { if (!found) print "NA" }
+  ' /proc/interrupts
+}
+
+snapshot_managed_irqs() {
+  local output="$1" irq
+  printf 'irq,total\n' > "${output}"
+  IFS=',' read -r -a irqs <<< "${MANAGED_DORMANT_IRQS}"
+  for irq in "${irqs[@]}"; do
+    printf '%s,%s\n' "${irq}" "$(irq_total "${irq}")" >> "${output}"
+  done
+}
+
+compare_irq_snapshots() {
+  local before="$1" after="$2" output="$3"
+  python3 - "${before}" "${after}" "${output}" <<'PY'
+import csv, sys
+def load(path):
+    with open(path, newline="") as f:
+        return {r["irq"]: r["total"] for r in csv.DictReader(f)}
+before, after = load(sys.argv[1]), load(sys.argv[2])
+invalid = False
+with open(sys.argv[3], "w", newline="") as f:
+    w = csv.writer(f); w.writerow(("irq", "before", "after", "delta"))
+    for irq in before:
+        b, a = before[irq], after.get(irq, "NA")
+        delta = "NA" if "NA" in (a, b) else int(a) - int(b)
+        w.writerow((irq, b, a, delta))
+        invalid |= delta == "NA" or delta != 0
+raise SystemExit(1 if invalid else 0)
+PY
+}

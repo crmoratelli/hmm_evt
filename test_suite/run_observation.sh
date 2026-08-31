@@ -61,6 +61,7 @@ SHOCK_THRESHOLD_NS=${SHOCK_THRESHOLD_NS}
 STARTED_AT=$(date -Is)
 EOF
 cat /proc/cmdline > "${run_dir}/cmdline.txt"
+snapshot_managed_irqs "${run_dir}/managed_irqs_before.csv"
 
 if [[ "${trace_mode}" == full ]]; then
   "${SUITE_DIR}/collect_trace.sh" start "${run_dir}"
@@ -144,6 +145,15 @@ if (( trace_started )); then "${SUITE_DIR}/collect_trace.sh" stop "${run_dir}"; 
 if [[ -n "${fifo_reader_pid}" ]]; then kill "${fifo_reader_pid}" 2>/dev/null || true; wait "${fifo_reader_pid}" 2>/dev/null || true; fifo_reader_pid=""; fi
 rm -f "${run_dir}/shock.fifo"
 
+snapshot_managed_irqs "${run_dir}/managed_irqs_after.csv"
+irq_activity=0
+if ! compare_irq_snapshots "${run_dir}/managed_irqs_before.csv" \
+    "${run_dir}/managed_irqs_after.csv" "${run_dir}/managed_irq_delta.csv"; then
+  irq_activity=1
+  : > "${run_dir}/INVALID_IRQ_ACTIVITY"
+  printf 'VALID=0\nINVALID_REASON=managed_irq_activity\n' >> "${run_dir}/metadata.env"
+fi
+
 python3 - "${run_dir}/samples.csv" > "${run_dir}/summary.txt" <<'PY'
 import csv, statistics, sys
 with open(sys.argv[1], newline='') as f: rows=list(csv.DictReader(f))
@@ -161,6 +171,9 @@ print(f"observed_cpus={','.join(sorted({r['cpu'] for r in rows}, key=int))}")
 PY
 
 printf 'COMPLETED_AT=%s\n' "$(date -Is)" >> "${run_dir}/metadata.env"
+if (( irq_activity )); then
+  die "observation invalidated: managed IRQ activity detected (see ${run_dir}/managed_irq_delta.csv)"
+fi
 wait_for_recovery
 sleep "${BETWEEN_OBSERVATIONS_S}"
 trap - EXIT INT TERM

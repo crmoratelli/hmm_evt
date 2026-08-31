@@ -8,6 +8,10 @@ RESULT_ROOT="${RESULT_ROOT:-/home/ghost/tdps_causal_results}"
 CPU_RT="${CPU_RT:-3}"
 CPU_SIBLING="${CPU_SIBLING:-11}"
 HOUSEKEEPING_CPUS="${HOUSEKEEPING_CPUS:-0-2,4-10,12-15}"
+# Managed NVMe MSI-X vectors that are immutable on cylon. A dedicated stress
+# probe established that these vectors remain dormant. They are checked before
+# and after every observation; any increment invalidates that observation.
+MANAGED_DORMANT_IRQS="${MANAGED_DORMANT_IRQS:-90,107,115,123,131}"
 
 PERIOD_NS="${PERIOD_NS:-5000000}"
 DEADLINE_NS="${DEADLINE_NS:-3000000}"
