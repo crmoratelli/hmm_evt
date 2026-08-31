@@ -1,25 +1,48 @@
-# =========================
-# configuration
-# =========================
-RESULT_DIR="${HOME}/va_results"
-IMAGE="periodic_bench:test"
-CPU_RT="3"
-OTHER_CPUS="0-2,4-10,12-15"
+#!/usr/bin/env bash
 
-PERIOD="5000000"
-DEADLINE="3000000"
-DURATION="500"
+# Canonical experimental configuration. Override with environment variables.
+TDPS_NAMESPACE="${TDPS_NAMESPACE:-tdps}"
+BENCH_IMAGE="${BENCH_IMAGE:-localhost/tdps/periodic-bench:causal-v1}"
+RESULT_ROOT="${RESULT_ROOT:-/home/ghost/tdps_causal_results}"
 
-# VC4-S (cpu.shares / indirect multi-tenant; dedicated CPU 3)
-HOG_IMAGE="alpine"
-HOG_SHARES=2048
-HOG_MAX=12
-HOG_PREFIX="hog"
+CPU_RT="${CPU_RT:-3}"
+CPU_SIBLING="${CPU_SIBLING:-11}"
+HOUSEKEEPING_CPUS="${HOUSEKEEPING_CPUS:-0-2,4-10,12-15}"
 
-# Shares of benchmark and hogs
-BENCH_SHARES=1024
-SHARED_POOL_N=12  
-HOG_SHARES=256
-SHARED_CPUS="3,4,5,6,7,8,9,10,11,12,13,14"
+PERIOD_NS="${PERIOD_NS:-5000000}"
+DEADLINE_NS="${DEADLINE_NS:-3000000}"
+DURATION_S="${DURATION_S:-500}"
+CPU_LOAD="${CPU_LOAD:-0.12}"
+RT_PRIORITY="${RT_PRIORITY:-80}"
+REPLICATIONS="${REPLICATIONS:-10}"
+CAMPAIGN_SEED="${CAMPAIGN_SEED:-20260831}"
 
+# Written by calibrate.sh. It must be fixed before any campaign.
+CALIBRATION_FILE="${CALIBRATION_FILE:-${RESULT_ROOT}/calibration.env}"
 
+IO_TEMP_PATH="${IO_TEMP_PATH:-/tmp/tdps-io-stress}"
+IO_WORKERS="${IO_WORKERS:-4}"
+HDD_WORKERS="${HDD_WORKERS:-2}"
+HDD_BYTES="${HDD_BYTES:-10G}"
+
+CHURN_IMAGE="${CHURN_IMAGE:-docker.io/library/alpine:3.20}"
+CHURN_WRITE_MB="${CHURN_WRITE_MB:-50}"
+
+INTERFERENCE_WARMUP_S="${INTERFERENCE_WARMUP_S:-10}"
+BETWEEN_OBSERVATIONS_S="${BETWEEN_OBSERVATIONS_S:-15}"
+RECOVERY_TIMEOUT_S="${RECOVERY_TIMEOUT_S:-300}"
+DIRTY_LIMIT_KB="${DIRTY_LIMIT_KB:-65536}"
+
+SHOCK_THRESHOLD_NS="${SHOCK_THRESHOLD_NS:-10000000}"
+TRACE_POST_SHOCK_S="${TRACE_POST_SHOCK_S:-2}"
+TRACE_BUFFER_KB="${TRACE_BUFFER_KB:-16384}"
+TELEMETRY_INTERVAL_S="${TELEMETRY_INTERVAL_S:-0.25}"
+
+EXPECTED_CMDLINE=(
+  "idle=poll"
+  "processor.max_cstate=0"
+  "isolcpus=domain,managed_irq,${CPU_RT},${CPU_SIBLING}"
+  "nohz_full=${CPU_RT},${CPU_SIBLING}"
+  "rcu_nocbs=${CPU_RT},${CPU_SIBLING}"
+  "irqaffinity=${HOUSEKEEPING_CPUS}"
+)

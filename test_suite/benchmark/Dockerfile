@@ -1,13 +1,6 @@
-FROM debian:bookworm AS builder
-
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential \
-  && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-COPY . /app
-RUN make clean && make
-
-FROM debian:bookworm
-WORKDIR /app
-COPY --from=builder /app/periodic_bench /app/periodic_bench
-CMD ["./periodic_bench", "--help"]
+FROM ubuntu:24.04
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends util-linux ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+COPY periodic_bench /usr/local/bin/periodic_bench
+ENTRYPOINT ["/usr/local/bin/periodic_bench"]

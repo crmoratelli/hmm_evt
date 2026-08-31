@@ -1,28 +1,9 @@
-# ===== Compiler and flags =====
-CC      := gcc
-CFLAGS  := -O2 -Wall -Wextra -Wpedantic -std=gnu11
-LDFLAGS := -pthread -lrt
+CC ?= gcc
+CFLAGS ?= -O2 -Wall -Wextra -Wpedantic -std=c11
 
-# ===== Target =====
-TARGET  := periodic_bench
-SRC     := periodic_bench.c
-OBJ     := $(SRC:.c=.o)
-
-# ===== Default =====
-all: $(TARGET)
-
-# ===== Build =====
-$(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-# ===== Utilities =====
+.PHONY: all clean
+all: periodic_bench
+periodic_bench: periodic_bench.c
+	$(CC) $(CFLAGS) -o $@ $<
 clean:
-	rm -f $(TARGET) *.o
-
-distclean: clean
-
-.PHONY: all clean distclean
-
+	rm -f periodic_bench
