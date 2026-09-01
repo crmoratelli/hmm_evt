@@ -29,7 +29,8 @@ as_root systemctl stop irqbalance 2>/dev/null || true
 # Keep global unbound workqueues away from the benchmark core and its idle SMT
 # sibling. Per-CPU kernel threads cannot be moved by this interface.
 if [[ -w /sys/devices/virtual/workqueue/cpumask ]] || as_root test -w /sys/devices/virtual/workqueue/cpumask; then
-  printf '%s\n' "${HOUSEKEEPING_CPUS}" | as_root tee /sys/devices/virtual/workqueue/cpumask >/dev/null
+  workqueue_mask="$(cpulist_to_hexmask "${HOUSEKEEPING_CPUS}")"
+  printf '%s\n' "${workqueue_mask}" | as_root tee /sys/devices/virtual/workqueue/cpumask >/dev/null
 fi
 
 # Re-apply housekeeping affinity after irqbalance is stopped. Managed/per-CPU

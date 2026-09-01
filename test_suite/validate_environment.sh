@@ -71,11 +71,12 @@ else
 fi
 
 if [[ -r /sys/devices/virtual/workqueue/cpumask ]]; then
-  workqueue_cpus="$(cat /sys/devices/virtual/workqueue/cpumask)"
-  if cpulist_contains "${workqueue_cpus}" "${CPU_RT}" || cpulist_contains "${workqueue_cpus}" "${CPU_SIBLING}"; then
-    bad "unbound workqueue mask includes CPUs ${CPU_RT},${CPU_SIBLING}: ${workqueue_cpus}"
+  workqueue_mask="$(cat /sys/devices/virtual/workqueue/cpumask)"
+  if hexmask_contains_cpu "${workqueue_mask}" "${CPU_RT}" || \
+      hexmask_contains_cpu "${workqueue_mask}" "${CPU_SIBLING}"; then
+    bad "unbound workqueue mask includes CPUs ${CPU_RT},${CPU_SIBLING}: ${workqueue_mask}"
   else
-    ok "unbound workqueues restricted to housekeeping CPUs"
+    ok "unbound workqueues exclude CPUs ${CPU_RT},${CPU_SIBLING} (mask ${workqueue_mask})"
   fi
 fi
 

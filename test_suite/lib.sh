@@ -74,6 +74,42 @@ cpulist_contains() {
   return 1
 }
 
+cpulist_to_hexmask() {
+  python3 - "$1" <<'PY'
+import sys
+mask = 0
+for part in sys.argv[1].split(','):
+    if '-' in part:
+        first, last = map(int, part.split('-', 1))
+        cpus = range(first, last + 1)
+    else:
+        cpus = (int(part),)
+    for cpu in cpus:
+        mask |= 1 << cpu
+groups = []
+while mask:
+    groups.append(f"{mask & 0xffffffff:08x}")
+    mask >>= 32
+if not groups:
+    print("0")
+else:
+    groups[-1] = groups[-1].lstrip('0') or '0'
+    print(','.join(reversed(groups)))
+PY
+}
+
+hexmask_contains_cpu() {
+  python3 - "${1//,/}" "$2" <<'PY'
+import sys
+try:
+    mask = int(sys.argv[1], 16)
+    cpu = int(sys.argv[2])
+except ValueError:
+    raise SystemExit(2)
+raise SystemExit(0 if mask & (1 << cpu) else 1)
+PY
+}
+
 list_contains_csv() {
   local list="$1" target="$2" item
   local -a items=()

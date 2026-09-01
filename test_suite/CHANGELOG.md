@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+- Converts the housekeeping CPU list to the hexadecimal mask required by the
+  global workqueue sysfs interface (`0-2,4-10,12-15` becomes `f7f7`).
+- Validates the workqueue mask as hexadecimal instead of as a CPU-list string.
+
 ## 1.0.2
 
 - Accepts only the five audited, zero-count managed NVMe IRQs on isolated CPUs.

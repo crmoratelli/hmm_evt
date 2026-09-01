@@ -51,6 +51,8 @@ The machine must be dedicated: `kubelet` inactive, no tasks in `k8s.io`, and
 `containerd` active. Required packages include `stress-ng`, `trace-cmd`,
 `linux-tools`, `gcc`, `make`, `python3`, `nerdctl`, and BuildKit for the build.
 The setup also restricts global unbound workqueues to the housekeeping CPUs.
+The workqueue sysfs interface uses a hexadecimal CPU mask; for the canonical
+housekeeping set `0-2,4-10,12-15`, the suite computes and writes `f7f7`.
 
 The IRQ exception list is machine-specific and defaults to
 `MANAGED_DORMANT_IRQS=90,107,115,123,131`. Do not reuse it on another machine
