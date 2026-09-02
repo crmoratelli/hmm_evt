@@ -84,6 +84,20 @@ tracefs="$(tracefs_path)" || die "tracefs is unavailable"
 for event in sched/sched_switch sched/sched_wakeup block/block_rq_issue block/block_rq_complete; do
   [[ -e "${tracefs}/events/${event}/enable" ]] && ok "trace event ${event}" || bad "trace event ${event}"
 done
+if as_root sh -c "
+  set -e
+  trap 'echo 0 > \"${tracefs}/tracing_on\"' EXIT
+  echo 0 > '${tracefs}/tracing_on'
+  echo > '${tracefs}/trace'
+  echo 1 > '${tracefs}/tracing_on'
+  echo TDPS_TRACE_MARKER_PREFLIGHT > '${tracefs}/trace_marker'
+  echo 0 > '${tracefs}/tracing_on'
+  echo > '${tracefs}/trace'
+"; then
+  ok "trace_marker writable while tracing is enabled"
+else
+  bad "trace_marker preflight"
+fi
 
 available_kb="$(df -Pk "${IO_TEMP_PATH}" | awk 'NR==2 {print $4}')"
 (( ${available_kb:-0} >= 25 * 1024 * 1024 )) && ok "at least 25 GiB free at ${IO_TEMP_PATH}" || bad "at least 25 GiB free at ${IO_TEMP_PATH}"

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.5
+
+- Enables the ftrace ring before writing `TDPS_TRACE_START`, avoiding `EBADF`
+  from `trace_marker` on Linux 6.8.
+- Adds an enable/write/disable `trace_marker` preflight to environment validation.
+- Makes `--resume` archive incomplete runs under `failed_runs/` and repeat only
+  the interrupted observation while preserving completed runs.
+
 ## 1.0.4
 
 - Stages samples, logs, telemetry, churn records, and trace output in `/dev/shm`.

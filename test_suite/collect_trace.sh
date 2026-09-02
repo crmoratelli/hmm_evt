@@ -43,8 +43,10 @@ case "${action}" in
     echo "${TRACE_BUFFER_KB}" | as_root tee "${tracefs}/buffer_size_kb" >/dev/null
     [[ ! -e "${tracefs}/options/overwrite" ]] || echo 1 | as_root tee "${tracefs}/options/overwrite" >/dev/null
     for event in "${event_list[@]}"; do enable_event "${event}"; done
-    printf 'TDPS_TRACE_START realtime=%s\n' "$(date +%s%N)" | as_root tee "${tracefs}/trace_marker" >/dev/null
+    # Linux 6.8 returns EBADF when trace_marker is written while tracing_on=0.
+    # Enable the ring first, then insert the temporal anchor.
     echo 1 | as_root tee "${tracefs}/tracing_on" >/dev/null
+    printf 'TDPS_TRACE_START realtime=%s\n' "$(date +%s%N)" | as_root tee "${tracefs}/trace_marker" >/dev/null
 
     (
       exec 9<>"${fifo}"

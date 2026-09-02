@@ -72,6 +72,22 @@ with manifest_path.open('a', newline='') as manifest:
         if completed(run_dir):
             if args.resume: continue
             print(f"refusing to overwrite completed run: {run_dir}", file=sys.stderr); sys.exit(2)
+        if run_dir.exists():
+            if not args.resume:
+                print(f"refusing to overwrite incomplete run: {run_dir}", file=sys.stderr); sys.exit(2)
+            failed_root = Path(result_root) / 'failed_runs'
+            stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+            archived = failed_root / f"{row['run_id']}__{stamp}"
+            suffix = 1
+            while archived.exists():
+                archived = failed_root / f"{row['run_id']}__{stamp}_{suffix}"
+                suffix += 1
+            if args.dry_run:
+                print(f"would archive incomplete run: {run_dir} -> {archived}", flush=True)
+            else:
+                failed_root.mkdir(parents=True, exist_ok=True)
+                run_dir.rename(archived)
+                print(f"archived incomplete run: {run_dir} -> {archived}", flush=True)
         command = [str(HERE/'run_observation.sh'), row['scenario'], row['substrate'],
                    str(row['replication']), row['trace_mode'], str(row['sequence'])]
         print('+', ' '.join(command), flush=True)

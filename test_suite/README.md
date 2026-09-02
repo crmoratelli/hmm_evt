@@ -59,6 +59,8 @@ The machine must be dedicated: `kubelet` inactive, no tasks in `k8s.io`, and
 `containerd` active. Required packages include `stress-ng`, `trace-cmd`,
 `linux-tools`, `gcc`, `make`, `python3`, `nerdctl`, and BuildKit for the build.
 The setup also restricts global unbound workqueues to the housekeeping CPUs.
+Validation performs a short enable/write/disable `trace_marker` preflight so a
+kernel-specific marker failure is detected before an observation begins.
 The workqueue sysfs interface uses a hexadecimal CPU mask; for the canonical
 housekeeping set `0-2,4-10,12-15`, the suite computes and writes `f7f7`.
 
@@ -101,7 +103,9 @@ Proceed to the full campaign only if the pilot shows acceptable perturbation.
 The default full design contains 60 randomized independent observations:
 three scenarios (`control`, `io`, `churn`) × two substrates × ten replications.
 Use `--resume` after an interruption; completed observations are never
-overwritten.
+overwritten. On resume, an incomplete observation directory is moved
+recoverably to `failed_runs/<run_id>__<UTC timestamp>` before that observation
+is repeated.
 
 ## Trace semantics
 
@@ -110,6 +114,8 @@ The host watcher adds a trace marker, waits two seconds, then freezes the
 overwriting ring buffer. The resulting `trace.dat` therefore contains the
 available history before the first qualifying shock and two seconds after it.
 If no qualifying shock occurs, the buffer is frozen at observation end.
+The ring is enabled immediately before inserting `TDPS_TRACE_START`, as kernels
+that reject `trace_marker` writes while tracing is disabled return `EBADF`.
 
 The trace is supporting causal evidence. The CSV remains authoritative for
 latency, wakeup delay, execution time, deadline misses, and backlog recovery.
