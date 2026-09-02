@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.4
+
+- Stages samples, logs, telemetry, churn records, and trace output in `/dev/shm`.
+- Measures managed IRQ deltas strictly across the timed benchmark window.
+- Persists observer artifacts only after closing the IRQ interval.
+- Accepts nonzero cumulative counters for audited IRQs after earlier runs;
+  validity depends on the per-observation delta.
+
 ## 1.0.3
 
 - Converts the housekeeping CPU list to the hexadecimal mask required by the

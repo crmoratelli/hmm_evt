@@ -51,7 +51,7 @@ for affinity in /proc/irq/[0-9]*/effective_affinity_list; do
     irq="${irq_dir##*/}"
     total="$(irq_total "${irq}")"
     irq_offenders+=("IRQ ${irq}: CPUs=${cpus}, total=${total}")
-    if ! list_contains_csv "${MANAGED_DORMANT_IRQS}" "${irq}" || [[ "${total}" != 0 ]]; then
+    if ! list_contains_csv "${MANAGED_DORMANT_IRQS}" "${irq}"; then
       unexpected_irq_offenders+=("IRQ ${irq}: CPUs=${cpus}, total=${total}")
     fi
   fi
@@ -64,7 +64,7 @@ if ((${#irq_offenders[@]})); then
     printf '  %s\n' "${unexpected_irq_offenders[@]}" >&2
     fail=1
   else
-    ok "only audited dormant managed IRQs use CPUs ${CPU_RT},${CPU_SIBLING}"
+    ok "only audited managed IRQs use CPUs ${CPU_RT},${CPU_SIBLING}; per-window deltas are enforced"
   fi
 else
   log "OK: device IRQs exclude CPUs ${CPU_RT},${CPU_SIBLING}"

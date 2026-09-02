@@ -11,7 +11,15 @@ On `cylon`, managed NVMe MSI-X vectors 90, 107, 115, 123, and 131 cannot be
 retargeted. A 30-second I/O stress probe produced zero interrupts on all five.
 The validation gate therefore accepts them only while their cumulative counts
 remain zero. Every observation stores before/after snapshots and is marked
-`INVALID_IRQ_ACTIVITY` if any counter changes.
+`INVALID_IRQ_ACTIVITY` if any counter changes during the timed measurement
+window. Cumulative totals need not return to zero after a completed run.
+
+Benchmark samples, logs, telemetry, churn timestamps, and trace extraction are
+staged in `/dev/shm`. The IRQ `before` snapshot is taken after interference
+warm-up; the `after` snapshot is taken immediately when `periodic_bench`
+returns, before stopping interference or persisting observer artifacts. This
+prevents the final `samples.csv` write from being misclassified as an IRQ that
+occurred during the experiment.
 
 ## Experimental unit
 
