@@ -1,2 +1,7 @@
 scripts/__pycache__/
 scripts/.venv/
+test_suite/benchmark/periodic_bench
+test_suite/benchmark/periodic_bench.c.before_stream_output
+pilot_buffered_v1.log
+pilot_execution.log
+pilot_stress_v2.log

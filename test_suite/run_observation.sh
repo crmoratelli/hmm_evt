@@ -12,6 +12,7 @@ sequence="${5:-0}"
 [[ "${scenario}" =~ ^(control|io|churn)$ ]] || die "scenario must be control, io, or churn"
 [[ "${substrate}" =~ ^(host|container)$ ]] || die "substrate must be host or container"
 [[ "${trace_mode}" =~ ^(none|telemetry|full)$ ]] || die "trace mode must be none, telemetry, or full"
+[[ "${BENCH_OUTPUT_MODE}" =~ ^(deferred|stream)$ ]] || die "BENCH_OUTPUT_MODE must be deferred or stream"
 [[ "${rep}" =~ ^[0-9]+$ ]] || die "invalid replication"
 
 load_calibration
@@ -28,6 +29,17 @@ mkdir -p "${run_dir}"
 stage_dir="/dev/shm/tdps-causal-${run_id}"
 [[ ! -e "${stage_dir}" ]] || die "staging directory already exists: ${stage_dir}"
 mkdir -p "${stage_dir}"
+
+bench_output_args=()
+container_output_mount_args=()
+host_samples_path="${stage_dir}/samples.csv"
+container_samples_path="/results/samples.csv"
+if [[ "${BENCH_OUTPUT_MODE}" == stream ]]; then
+  bench_output_args=(--stream-output)
+  host_samples_path="${run_dir}/samples.csv"
+  container_samples_path="/stream-results/samples.csv"
+  container_output_mount_args=(--volume "${run_dir}:/stream-results")
+fi
 
 telemetry_pid="" interference_pid="" fifo_reader_pid="" trace_started=0
 io_run_path=""
@@ -58,6 +70,7 @@ SCENARIO=${scenario}
 SUBSTRATE=${substrate}
 REPLICATION=${rep}
 TRACE_MODE=${trace_mode}
+BENCH_OUTPUT_MODE=${BENCH_OUTPUT_MODE}
 BENCH_ITERS=${BENCH_ITERS}
 PERIOD_NS=${PERIOD_NS}
 DEADLINE_NS=${DEADLINE_NS}
@@ -93,7 +106,7 @@ case "${scenario}" in
     mkdir -p "${io_run_path}"
     printf 'IO_RUN_PATH=%s\n' "${io_run_path}" >> "${stage_dir}/metadata.env"
     setsid taskset -c "${HOUSEKEEPING_CPUS}" stress-ng \
-      --io "${IO_WORKERS}" --hdd "${HDD_WORKERS}" --hdd-bytes "${HDD_BYTES}" \
+      --io 4 --hdd 2 --hdd-bytes 10G \
       --temp-path "${io_run_path}" --timeout "$((DURATION_S + INTERFERENCE_WARMUP_S + 60))s" \
       >"${stage_dir}/interference.log" 2>&1 &
     interference_pid=$!
@@ -133,25 +146,25 @@ if [[ "${substrate}" == host ]]; then
   as_root chrt -f "${RT_PRIORITY}" taskset -c "${CPU_RT}" \
     "${SUITE_DIR}/benchmark/periodic_bench" \
     --period "${PERIOD_NS}" --deadline "${DEADLINE_NS}" --duration "${DURATION_S}" \
-    --iters "${BENCH_ITERS}" --out "${stage_dir}/samples.csv" --mlock \
+    --iters "${BENCH_ITERS}" --out "${host_samples_path}" --mlock "${bench_output_args[@]}" \
     --shock-threshold "${SHOCK_THRESHOLD_NS}" --shock-fifo "${stage_dir}/shock.fifo" \
     >"${benchmark_log}" 2>&1
-  as_root chown "$(id -u):$(id -g)" "${stage_dir}/samples.csv" "${benchmark_log}"
+  as_root chown "$(id -u):$(id -g)" "${host_samples_path}" "${benchmark_log}"
 else
   as_root nerdctl --namespace "${TDPS_NAMESPACE}" run --rm --net none \
     --name "tdps-bench-${sequence}" --pid host --cpuset-cpus "${CPU_RT}" \
     --cap-add SYS_NICE --cap-add IPC_LOCK --ulimit rtprio=99 --ulimit memlock=-1 \
-    --volume "${stage_dir}:/results" \
+    --volume "${stage_dir}:/results" "${container_output_mount_args[@]}" \
     --entrypoint /usr/bin/chrt "${BENCH_IMAGE}" -f "${RT_PRIORITY}" \
     /usr/local/bin/periodic_bench --period "${PERIOD_NS}" --deadline "${DEADLINE_NS}" \
-    --duration "${DURATION_S}" --iters "${BENCH_ITERS}" --out /results/samples.csv --mlock \
+    --duration "${DURATION_S}" --iters "${BENCH_ITERS}" --out "${container_samples_path}" --mlock "${bench_output_args[@]}" \
     --shock-threshold "${SHOCK_THRESHOLD_NS}" --shock-fifo /results/shock.fifo \
     >"${benchmark_log}" 2>&1
 fi
 
-# periodic_bench writes samples.csv only after its timed loop. Because the file
-# is on tmpfs, this snapshot excludes result persistence I/O while still
-# covering the complete measurement interval.
+# In deferred mode, periodic_bench writes samples.csv to tmpfs only after the
+# timed loop. In stream mode, it writes each sample directly to the result
+# filesystem during measurement, reproducing the legacy observation path.
 snapshot_managed_irqs "${stage_dir}/managed_irqs_after.csv"
 printf 'MEASUREMENT_COMPLETED_AT=%s\n' "$(date -Is)" >> "${stage_dir}/metadata.env"
 irq_activity=0
@@ -192,7 +205,14 @@ PY
 
 printf 'COMPLETED_AT=%s\n' "$(date -Is)" >> "${run_dir}/metadata.env"
 if (( irq_activity )); then
-  die "observation invalidated: managed IRQ activity during measurement (see ${run_dir}/managed_irq_delta.csv)"
+  if [[ "${scenario}" == "io" ]]; then
+    printf "MANAGED_IRQ_ACTIVITY=1\n" >> "${run_dir}/metadata.env"
+    log "managed NVMe IRQ activity recorded as an explanatory I/O mechanism"
+  else
+    die "observation invalidated: managed IRQ activity during measurement (see ${run_dir}/managed_irq_delta.csv)"
+  fi
+else
+  printf "MANAGED_IRQ_ACTIVITY=0\n" >> "${run_dir}/metadata.env"
 fi
 wait_for_recovery
 sleep "${BETWEEN_OBSERVATIONS_S}"

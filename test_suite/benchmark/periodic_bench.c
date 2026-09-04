@@ -64,7 +64,8 @@ static void usage(const char *prog) {
     fprintf(stderr,
         "usage: %s [--period ns] [--deadline ns] [--duration s] "
         "[--iters n | --calibrate-only] [--cpu-load x] [--out path] "
-        "[--shock-fifo path] [--shock-threshold ns] [--mlock]\n", prog);
+        "[--shock-fifo path] [--shock-threshold ns] [--mlock] "
+        "[--stream-output]\n", prog);
 }
 
 int main(int argc, char **argv) {
@@ -72,7 +73,7 @@ int main(int argc, char **argv) {
     uint64_t iters = 0, shock_threshold_ns = 10000000;
     double cpu_load = 0.12;
     const char *out_path = "out.csv", *shock_fifo = NULL;
-    bool calibrate_only = false, do_mlock = false;
+    bool calibrate_only = false, do_mlock = false, stream_output = false;
 
     for (int i = 1; i < argc; ++i) {
         if (!strcmp(argv[i], "--period") && i + 1 < argc) period_ns = strtoull(argv[++i], NULL, 10);
@@ -85,6 +86,7 @@ int main(int argc, char **argv) {
         else if (!strcmp(argv[i], "--shock-threshold") && i + 1 < argc) shock_threshold_ns = strtoull(argv[++i], NULL, 10);
         else if (!strcmp(argv[i], "--calibrate-only")) calibrate_only = true;
         else if (!strcmp(argv[i], "--mlock")) do_mlock = true;
+        else if (!strcmp(argv[i], "--stream-output")) stream_output = true;
         else { usage(argv[0]); return 2; }
     }
 
@@ -107,6 +109,13 @@ int main(int argc, char **argv) {
 
     int shock_fd = -1;
     if (shock_fifo) shock_fd = open(shock_fifo, O_WRONLY | O_NONBLOCK | O_CLOEXEC);
+
+    FILE *out = NULL;
+    if (stream_output) {
+        out = fopen(out_path, "w");
+        if (!out) { perror("fopen"); return 1; }
+        fprintf(out, "job,release_ns,start_ns,finish_ns,wakeup_delay_ns,execution_ns,response_ns,lateness_ns,miss,cpu\n");
+    }
 
     struct sched_param sp = {0};
     sched_getparam(0, &sp);
@@ -152,21 +161,31 @@ int main(int argc, char **argv) {
             if (n > 0 && write(shock_fd, msg, (size_t)n) > 0) shock_sent = true;
         }
 
+        if (stream_output) {
+            fprintf(out, "%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64
+                         ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRId64 ",%d,%d\n",
+                    s->job, s->release_ns, s->start_ns, s->finish_ns,
+                    s->wakeup_delay_ns, s->execution_ns, s->response_ns,
+                    s->lateness_ns, s->miss, s->cpu);
+        }
+
         add_ns(&next, period_ns);
         if (s->finish_ns >= end_ns) break;
     }
 
     if (shock_fd >= 0) close(shock_fd);
-    FILE *out = fopen(out_path, "w");
-    if (!out) { perror("fopen"); return 1; }
-    fprintf(out, "job,release_ns,start_ns,finish_ns,wakeup_delay_ns,execution_ns,response_ns,lateness_ns,miss,cpu\n");
-    for (size_t i = 0; i < count; ++i) {
-        const struct sample *s = &samples[i];
-        fprintf(out, "%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64
-                     ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRId64 ",%d,%d\n",
-                s->job, s->release_ns, s->start_ns, s->finish_ns,
-                s->wakeup_delay_ns, s->execution_ns, s->response_ns,
-                s->lateness_ns, s->miss, s->cpu);
+    if (!stream_output) {
+        out = fopen(out_path, "w");
+        if (!out) { perror("fopen"); return 1; }
+        fprintf(out, "job,release_ns,start_ns,finish_ns,wakeup_delay_ns,execution_ns,response_ns,lateness_ns,miss,cpu\n");
+        for (size_t i = 0; i < count; ++i) {
+            const struct sample *s = &samples[i];
+            fprintf(out, "%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRIu64
+                         ",%" PRIu64 ",%" PRIu64 ",%" PRIu64 ",%" PRId64 ",%d,%d\n",
+                    s->job, s->release_ns, s->start_ns, s->finish_ns,
+                    s->wakeup_delay_ns, s->execution_ns, s->response_ns,
+                    s->lateness_ns, s->miss, s->cpu);
+        }
     }
     if (fclose(out) != 0) { perror("fclose"); return 1; }
     free(samples);

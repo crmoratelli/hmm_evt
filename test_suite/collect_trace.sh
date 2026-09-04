@@ -19,11 +19,10 @@ event_list=(
   writeback/writeback_dirty_page writeback/writeback_start writeback/writeback_written
   writeback/writeback_write_inode_start writeback/writeback_write_inode
   vmscan/mm_vmscan_direct_reclaim_begin vmscan/mm_vmscan_direct_reclaim_end
-  ext4/ext4_da_write_begin ext4/ext4_da_write_end
   ext4/ext4_sync_file_enter ext4/ext4_sync_file_exit
   workqueue/workqueue_execute_start workqueue/workqueue_execute_end
   cgroup/cgroup_mkdir cgroup/cgroup_rmdir cgroup/cgroup_attach_task
-  power/cpu_frequency power/cpu_idle
+  power/cpu_frequency
 )
 
 enable_event() {
