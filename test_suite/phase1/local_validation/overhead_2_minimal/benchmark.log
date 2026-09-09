@@ -1,0 +1,2 @@
+schema=2 mode=deferred jobs=200 period=1000000 deadline=1000000 iters=1000 policy=0 priority=0 cpu=0 logger_cpu=1 queue=1024 record_bytes=64 minimal=1 mlock=0 test_shock_job=18446744073709551615 test_shock_ns=0 test_logger_delay_ns=0
+loop_end_ns=3560201333718 drain_end_ns=3560201477561 accepted=200 dropped=0 delivery_errors=0 queue_high_water=0

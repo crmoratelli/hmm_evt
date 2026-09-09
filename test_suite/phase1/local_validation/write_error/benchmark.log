@@ -1,0 +1,3 @@
+schema=2 mode=inline jobs=3 period=5000000 deadline=3000000 iters=1000 policy=0 priority=0 cpu=7 logger_cpu=-1 queue=1024 record_bytes=64 minimal=0 mlock=0 test_shock_job=18446744073709551615 test_shock_ns=0 test_logger_delay_ns=0
+fclose samples: File too large
+loop_end_ns=3558920902939 drain_end_ns=3558920902959 accepted=1 dropped=0 delivery_errors=2 queue_high_water=0

@@ -1,0 +1,23 @@
+[
+  "taskset",
+  "-c",
+  "0",
+  "/workspace/scratch/1640f5c8c0e5/phase1_work/test_suite/phase1/periodic_v2",
+  "--mode",
+  "deferred",
+  "--iters",
+  "1000",
+  "--jobs",
+  "200",
+  "--period",
+  "1000000",
+  "--deadline",
+  "1000000",
+  "--out",
+  "/workspace/scratch/1640f5c8c0e5/phase1_verified/overhead_3_minimal/samples.csv",
+  "--sink",
+  "/workspace/scratch/1640f5c8c0e5/phase1_verified/overhead_3_minimal/functional.bin",
+  "--logger-cpu",
+  "1",
+  "--minimal"
+]

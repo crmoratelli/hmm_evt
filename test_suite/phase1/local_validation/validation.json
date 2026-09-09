@@ -1,0 +1,213 @@
+{
+  "cpufreq": [],
+  "rt_cpu_siblings": "0",
+  "platform": "Linux-6.18.35-x86_64-with-glibc2.39",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "backend": "host",
+  "rt": false,
+  "cpu": 0,
+  "logger_cpu": 1,
+  "iters": 1000,
+  "source_sha256": "b9f64037c63540de421a8b39449a1f21fbf1043280ac8f12a3496511b4576cb2",
+  "binary_sha256": "9d0901bed2e7f91ba93f1fbdd8be5f05afc71d00c03f3d8553c6e904cc34db83",
+  "tests": [
+    {
+      "name": "deferred",
+      "passed": true,
+      "jobs": 100,
+      "accepted": 100,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 74654.5,
+      "max_response_ns": 229214,
+      "median_postcompute_instrumented_ns": 50.0
+    },
+    {
+      "name": "inline",
+      "passed": true,
+      "jobs": 100,
+      "accepted": 100,
+      "dropped": 0,
+      "misses": 1,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 77926.0,
+      "max_response_ns": 1060025,
+      "median_postcompute_instrumented_ns": 3130.0
+    },
+    {
+      "name": "async",
+      "passed": true,
+      "jobs": 100,
+      "accepted": 100,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4116.0,
+      "median_response_ns": 79759.0,
+      "max_response_ns": 345419,
+      "median_postcompute_instrumented_ns": 90.0
+    },
+    {
+      "name": "queue_full",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 4,
+      "dropped": 196,
+      "misses": 8,
+      "median_execution_ns": 4076.0,
+      "median_response_ns": 62195.0,
+      "max_response_ns": 267841,
+      "median_postcompute_instrumented_ns": 50.0
+    },
+    {
+      "name": "shock",
+      "passed": true,
+      "jobs": 100,
+      "accepted": 100,
+      "dropped": 0,
+      "misses": 20,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 99616.0,
+      "max_response_ns": 19240131,
+      "median_postcompute_instrumented_ns": 2994.5
+    },
+    {
+      "name": "legacy_rejected",
+      "passed": true,
+      "expected_exit": 2
+    },
+    {
+      "name": "existing_sink_rejected",
+      "passed": true
+    },
+    {
+      "name": "real_write_error_propagated",
+      "passed": true
+    },
+    {
+      "name": "overhead_0_instrumented",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 200,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 75564.0,
+      "max_response_ns": 275257,
+      "median_postcompute_instrumented_ns": 50.0
+    },
+    {
+      "name": "overhead_0_minimal",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 200,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 75146.0,
+      "max_response_ns": 560748,
+      "median_postcompute_instrumented_ns": null
+    },
+    {
+      "name": "overhead_1_instrumented",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 200,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 73070.5,
+      "max_response_ns": 110877,
+      "median_postcompute_instrumented_ns": 50.0
+    },
+    {
+      "name": "overhead_1_minimal",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 200,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4086.0,
+      "median_response_ns": 75538.5,
+      "max_response_ns": 163079,
+      "median_postcompute_instrumented_ns": null
+    },
+    {
+      "name": "overhead_2_instrumented",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 200,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4106.0,
+      "median_response_ns": 77084.0,
+      "max_response_ns": 269809,
+      "median_postcompute_instrumented_ns": 50.0
+    },
+    {
+      "name": "overhead_2_minimal",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 200,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 77127.0,
+      "max_response_ns": 576888,
+      "median_postcompute_instrumented_ns": null
+    },
+    {
+      "name": "overhead_3_instrumented",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 200,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 74097.5,
+      "max_response_ns": 721666,
+      "median_postcompute_instrumented_ns": 50.0
+    },
+    {
+      "name": "overhead_3_minimal",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 200,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 75387.0,
+      "max_response_ns": 259183,
+      "median_postcompute_instrumented_ns": null
+    },
+    {
+      "name": "overhead_4_minimal",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 200,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 76073.5,
+      "max_response_ns": 423825,
+      "median_postcompute_instrumented_ns": null
+    },
+    {
+      "name": "overhead_4_instrumented",
+      "passed": true,
+      "jobs": 200,
+      "accepted": 200,
+      "dropped": 0,
+      "misses": 0,
+      "median_execution_ns": 4096.0,
+      "median_response_ns": 80082.0,
+      "max_response_ns": 766999,
+      "median_postcompute_instrumented_ns": 50.0
+    }
+  ],
+  "limitations": [
+    "Functional validation, not a cylon latency campaign.",
+    "CPU frequency, isolation, IRQ routing and physical-core separation require independent verification."
+  ],
+  "status": "passed"
+}

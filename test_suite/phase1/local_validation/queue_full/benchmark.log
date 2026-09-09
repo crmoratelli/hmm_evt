@@ -1,0 +1,2 @@
+schema=2 mode=async jobs=200 period=100000 deadline=100000 iters=1000 policy=0 priority=0 cpu=0 logger_cpu=1 queue=1 record_bytes=64 minimal=0 mlock=0 test_shock_job=18446744073709551615 test_shock_ns=0 test_logger_delay_ns=5000000
+loop_end_ns=3558775343481 drain_end_ns=3558776411440 accepted=4 dropped=196 delivery_errors=0 queue_high_water=1

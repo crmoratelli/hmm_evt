@@ -1,0 +1,1 @@
+invalid config; require --iters --out --sink; async needs --logger-cpu; minimal only deferred

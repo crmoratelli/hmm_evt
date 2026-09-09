@@ -1,0 +1,2 @@
+schema=2 mode=inline jobs=100 period=1000000 deadline=1000000 iters=1000 policy=0 priority=0 cpu=0 logger_cpu=1 queue=1024 record_bytes=64 minimal=0 mlock=0 test_shock_job=10 test_shock_ns=20000000 test_logger_delay_ns=0
+loop_end_ns=3558889788077 drain_end_ns=3558889788107 accepted=100 dropped=0 delivery_errors=0 queue_high_water=0
