@@ -22,7 +22,7 @@ binary="${PHASE2_DIR}/periodic_v2"
 
 export RESULT_ROOT="${PHASE2_RESULT_ROOT}"
 export CALIBRATION_FILE="${PHASE2_CALIBRATION_FILE}"
-"${SUITE_DIR}/validate_environment.sh"
+TDPS_REQUIRE_TRACING=0 "${SUITE_DIR}/validate_environment.sh"
 load_calibration
 
 [[ "${BENCH_ITERS}" == 151994 ]] || die "expected BENCH_ITERS=151994, got ${BENCH_ITERS}"
@@ -84,4 +84,3 @@ printf 'BENCH_ITERS=%s\nPERIOD_NS=%s\nDEADLINE_NS=%s\nJOBS_PER_FULL_RUN=%s\n' \
   "${BENCH_ITERS}" "${PERIOD_NS}" "${DEADLINE_NS}" "${jobs}"
 printf 'OFFERED_BYTES_PER_RUN=%s\nQUEUE_CAPACITY=%s\nLOGGER_CPU=%s\n' \
   "${offered_bytes}" "${PHASE2_QUEUE_CAPACITY}" "${PHASE2_LOGGER_CPU}"
-

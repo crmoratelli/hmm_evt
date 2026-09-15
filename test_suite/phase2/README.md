@@ -54,6 +54,8 @@ Deferred e inline exigem entrega completa.
 - frequência 3,8 GHz fixa e boost desativado;
 - I/O: `stress-ng --io 4 --hdd 2 --hdd-bytes 10G` nos housekeeping CPUs;
 - telemetria leve em todas as células; sem tracing pesado;
+- o preflight desativa somente os gates de eventos/`trace_marker` da validação
+  comum; todas as verificações de isolamento, frequência, runtime e IRQ continuam;
 - snapshots dos IRQs gerenciados delimitam benchmark e drain;
 - recuperação exige `sync` e Dirty+Writeback ≤ 65536 kB;
 - runs incompletos são preservados e movidos para `failed_runs/` no resume.
