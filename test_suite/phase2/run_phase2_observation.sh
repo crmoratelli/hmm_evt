@@ -207,7 +207,17 @@ if [[ -n "${io_run_path}" ]]; then rmdir "${io_run_path}" 2>/dev/null || true; f
 
 wait_for_recovery
 sleep "${BETWEEN_OBSERVATIONS_S}"
-${cleanupBlock}cp -a "${stage_dir}/." "${run_dir}/"
+if [[ "${substrate}" == container ]]; then
+  if as_root timeout 30s nerdctl --namespace "${TDPS_NAMESPACE}" rm -f "${container_name}"; then
+    printf 'CONTAINER_CLEANUP=completed\n' >> "${stage_dir}/metadata.env"
+  else
+    printf 'VALID=0\nCONTAINER_CLEANUP=failed\nINVALID_REASON=container_cleanup_failed\n' \
+      >> "${stage_dir}/metadata.env"
+    die "container cleanup failed: ${container_name}"
+  fi
+fi
+
+cp -a "${stage_dir}/." "${run_dir}/"
 python3 "${PHASE2_DIR}/summarize_phase2.py" --run-dir "${run_dir}" \
   --shock-threshold-ns "${PHASE2_SHOCK_THRESHOLD_NS}"
 [[ ! -e "${run_dir}/INVALID_IRQ_ACTIVITY" ]] \
