@@ -198,16 +198,6 @@ else
   : > "${stage_dir}/INVALID_IRQ_ACTIVITY"
 fi
 
-if [[ "${substrate}" == container ]]; then
-  if as_root timeout 30s nerdctl --namespace "${TDPS_NAMESPACE}" rm -f "${container_name}"; then
-    printf 'CONTAINER_CLEANUP=completed\n' >> "${stage_dir}/metadata.env"
-  else
-    printf 'VALID=0\nCONTAINER_CLEANUP=failed\nINVALID_REASON=container_cleanup_failed\n' \
-      >> "${stage_dir}/metadata.env"
-    die "container cleanup failed: ${container_name}"
-  fi
-fi
-
 stop_process_group "${interference_pid}"
 interference_pid=""
 kill "${telemetry_pid}" 2>/dev/null || true
@@ -215,7 +205,9 @@ wait "${telemetry_pid}" 2>/dev/null || true
 telemetry_pid=""
 if [[ -n "${io_run_path}" ]]; then rmdir "${io_run_path}" 2>/dev/null || true; fi
 
-cp -a "${stage_dir}/." "${run_dir}/"
+wait_for_recovery
+sleep "${BETWEEN_OBSERVATIONS_S}"
+${cleanupBlock}cp -a "${stage_dir}/." "${run_dir}/"
 python3 "${PHASE2_DIR}/summarize_phase2.py" --run-dir "${run_dir}" \
   --shock-threshold-ns "${PHASE2_SHOCK_THRESHOLD_NS}"
 [[ ! -e "${run_dir}/INVALID_IRQ_ACTIVITY" ]] \
@@ -226,8 +218,6 @@ printf 'VALID=1\nSTATE=completed\nCOMPLETED_AT=%s\n' "$(date -Is)" >> "${run_dir
 : > "${run_dir}/COMPLETED"
 rm -rf -- "${stage_dir:?}"
 completed=1
-wait_for_recovery
-sleep "${BETWEEN_OBSERVATIONS_S}"
 trap - EXIT INT TERM
 if [[ -n "${sudo_keepalive_pid}" ]]; then kill "${sudo_keepalive_pid}" 2>/dev/null || true; wait "${sudo_keepalive_pid}" 2>/dev/null || true; fi
 log "completed ${run_id}"
