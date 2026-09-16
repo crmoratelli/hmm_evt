@@ -54,7 +54,7 @@ cleanup() {
   set +e
   stop_process_group "${interference_pid}"
   if [[ -n "${telemetry_pid}" ]]; then kill "${telemetry_pid}" 2>/dev/null; wait "${telemetry_pid}" 2>/dev/null; fi
-  as_root nerdctl --namespace "${TDPS_NAMESPACE}" rm -f "${container_name}" >/dev/null 2>&1 || true
+  as_root timeout 30s nerdctl --namespace "${TDPS_NAMESPACE}" rm -f "${container_name}" >/dev/null 2>&1 || true
   if [[ -n "${sudo_keepalive_pid}" ]]; then kill "${sudo_keepalive_pid}" 2>/dev/null; wait "${sudo_keepalive_pid}" 2>/dev/null; fi
   if [[ -d "${stage_dir}" ]]; then
     cp -a "${stage_dir}/." "${run_dir}/" 2>/dev/null || true
@@ -158,7 +158,7 @@ else
     --queue "${PHASE2_QUEUE_CAPACITY}" --mlock
   )
   printf '%q ' sudo timeout --signal=TERM --kill-after=10 "${timeout_s}s" nerdctl \
-    --namespace "${TDPS_NAMESPACE}" run --rm --net none --name "${container_name}" \
+    --namespace "${TDPS_NAMESPACE}" run --net none --name "${container_name}" \
     --pid host --cpuset-cpus "${CPU_RT},${PHASE2_LOGGER_CPU}" \
     --cap-add SYS_NICE --cap-add IPC_LOCK --ulimit rtprio=99 --ulimit memlock=-1 \
     --volume "${stage_dir}:/results" --volume "${run_dir}:/sink" \
@@ -167,7 +167,7 @@ else
     > "${stage_dir}/benchmark_command.txt"
   printf '\n' >> "${stage_dir}/benchmark_command.txt"
   as_root timeout --signal=TERM --kill-after=10 "${timeout_s}s" \
-    nerdctl --namespace "${TDPS_NAMESPACE}" run --rm --net none --name "${container_name}" \
+    nerdctl --namespace "${TDPS_NAMESPACE}" run --net none --name "${container_name}" \
     --pid host --cpuset-cpus "${CPU_RT},${PHASE2_LOGGER_CPU}" \
     --cap-add SYS_NICE --cap-add IPC_LOCK --ulimit rtprio=99 --ulimit memlock=-1 \
     --volume "${stage_dir}:/results" --volume "${run_dir}:/sink" \
@@ -196,6 +196,16 @@ else
   printf 'VALID=0\nMANAGED_IRQ_ACTIVITY=1\nINVALID_REASON=managed_irq_activity_during_measurement\n' \
     >> "${stage_dir}/metadata.env"
   : > "${stage_dir}/INVALID_IRQ_ACTIVITY"
+fi
+
+if [[ "${substrate}" == container ]]; then
+  if as_root timeout 30s nerdctl --namespace "${TDPS_NAMESPACE}" rm -f "${container_name}"; then
+    printf 'CONTAINER_CLEANUP=completed\n' >> "${stage_dir}/metadata.env"
+  else
+    printf 'VALID=0\nCONTAINER_CLEANUP=failed\nINVALID_REASON=container_cleanup_failed\n' \
+      >> "${stage_dir}/metadata.env"
+    die "container cleanup failed: ${container_name}"
+  fi
 fi
 
 stop_process_group "${interference_pid}"
