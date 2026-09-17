@@ -2,7 +2,7 @@
 
 Data da decisão: 09/09/2026. Versão inicial do registro.
 Periódico-alvo: Journal of Systems Architecture (JSA).
-Estado: fase 1 iniciada em 09/09/2026; especificação e implementação local disponíveis; validação RT no cylon pendente.
+Estado: fases 1 e 3A concluídas; Fase 2 em preparação, sem campanha principal iniciada.
 
 ## 1. Como usar este documento
 
@@ -106,9 +106,9 @@ Não assumir que logging assíncrono elimina risco: fila finita pode saturar e e
 
 | Fase | Objetivo | Entrega e critério de passagem | Status |
 |---|---|---|---|
-| 1 — Semântica do workload | Separar computação, saída e observação; definir deferred/inline/async | Especificação temporal e de entrega; implementação revisada; testes funcionais e de consistência; overhead documentado | Em andamento; gate cylon pendente |
-| 2 — Matriz principal | Comparar arquiteturas × controle/I/O × host/container | Campanha randomizada reproduzível; métricas por run e episódio; incerteza e número de choques reportados | Não iniciada |
-| 3 — Intervenções causais | Testar dependência do caminho compartilhado | Contrastes mesmo armazenamento/tmpfs/outro dispositivo quando disponível; batching/desacoplamento e eventual limitação de I/O | Não iniciada |
+| 1 — Semântica do workload | Separar computação, saída e observação; definir deferred/inline/async | Especificação temporal e de entrega; implementação revisada; testes funcionais e de consistência; overhead documentado | Concluída em 10/09/2026 |
+| 2 — Matriz principal | Comparar arquiteturas × controle/I/O × host/container | Campanha randomizada reproduzível; métricas por run e episódio; incerteza e número de choques reportados | Launcher em preparação; campanha não iniciada |
+| 3 — Intervenções causais | Testar dependência do caminho compartilhado | Contrastes mesmo armazenamento/tmpfs/outro dispositivo quando disponível; batching/desacoplamento e eventual limitação de I/O | Fase 3A concluída; demais intervenções pendentes |
 | 4 — Lei de recuperação | Testar previsão quantitativa da dinâmica periódica | Variação controlada de T−C; comparação entre trajetória e número de misses previstos/observados; análise dos desvios | Não iniciada |
 | 5 — Generalização | Testar transferibilidade além da sonda e plataforma inicial | Segunda plataforma/configuração e/ou aplicação de controle real; limites de validade explícitos | Não iniciada |
 
@@ -166,6 +166,15 @@ Os experimentos anteriores são evidências exploratórias pré-pivô (seção 3
 
 ### Fase 1 — Resultados
 
+Atualização de encerramento, 10/09/2026:
+
+- Gate funcional RT aprovado em host e container; 100/100 registros entregues nos três modos básicos, sem drops, erros ou misses. A imagem continha exatamente o mesmo executável do host, SHA256 `936b198629ee8520b1a9a7c52af4c70b956e5910a71eea00584e8a7ff8f5bd4e`.
+- A saturação artificial confirmou `drop-newest` (23 aceitos e 177 descartados em host e container); o choque artificial confirmou propagação. Esses casos são testes funcionais, não eventos naturais.
+- Na configuração científica, cinco pares por substrato passaram sem misses. A mediana das diferenças pareadas de `response_ns` instrumentado−minimal foi aproximadamente −2,646 µs no host e −2,714 µs no container. O sinal não demonstra ganho da instrumentação; registra ausência de overhead positivo detectável nesse gate curto.
+- Critério de passagem atendido. A implementação de referência permanece `phase1/periodic_v2.c`, esquema 2, SHA256 `b9f64037c63540de421a8b39449a1f21fbf1043280ac8f12a3496511b4576cb2`.
+
+Registro inicial preservado abaixo para manter a cronologia:
+
 - Status: em andamento. Suite atual auditada; especificação e implementação local concluídas; gate RT host/container no cylon pendente.
 - Data: 09/09/2026. Fonte recebida: test_suite.zip, SHA256 7b19b3721bb30d76711720e4a432cb7e084bbc31b2bffb66ef7fd591c4c88ff0. Todos os 16 arquivos históricos preservados byte a byte.
 - Implementação: phase1/periodic_v2.c, esquema 2, SHA256 b9f64037c63540de421a8b39449a1f21fbf1043280ac8f12a3496511b4576cb2; sem commit atribuído. Novo executável separado; stream continua legado, não alias de inline.
@@ -180,7 +189,10 @@ Os experimentos anteriores são evidências exploratórias pré-pivô (seção 3
 
 ### Fase 2 — Resultados
 
-- Status: não iniciada.
+- Status: launcher em preparação em `test_suite/phase2`; campanha principal não iniciada.
+- Desenho fechado: 12 células (`deferred|inline|async` × `control|io` × `host|container`), dez blocos completos randomizados, 500 s/run e seed 20260915. As 12 células são mantidas para estimar efeitos principais e interações sem reduzir controles.
+- Contrato async: fila SPSC 1024, logger na CPU 0 com `SCHED_OTHER/0`, `drop-newest` sem backpressure. Drop é desfecho válido; erro de entrega ou corrupção invalida o run.
+- Sequência de gate: preflight, dry-run, smoke das 12 células e autorização explícita antes da campanha.
 - Runs, configurações, tempo de exposição e episódios: pendentes.
 - Resultados por célula e incerteza entre runs: pendentes.
 - Integridade, exclusões justificadas e evidências: pendentes.
@@ -188,8 +200,12 @@ Os experimentos anteriores são evidências exploratórias pré-pivô (seção 3
 
 ### Fase 3 — Resultados
 
-- Status: não iniciada.
-- Intervenções e controles executados: pendentes.
+- Status: Fase 3A concluída em 10/09/2026; demais intervenções não iniciadas.
+- Intervenção pareada: host/inline sob I/O, sink ext4 compartilhado versus tmpfs; cinco blocos, cinco runs por sink, 500 s/run, 100.000 jobs/run, sem tracing pesado e sem atividade nos IRQs gerenciados.
+- Ext4: 425 misses em 33 episódios ao longo de 500.000 jobs; todos os cinco runs tiveram misses; máximo global de resposta 259.237.521 ns.
+- Tmpfs: zero misses e zero episódios em 500.000 jobs; máximo global de resposta 667.470 ns.
+- O contraste sustenta que o caminho de armazenamento compartilhado é necessário para os episódios observados nessa configuração. Não identifica sozinho a syscall/stack nem prova uma causa interna específica do kernel.
+- Demais intervenções (dispositivo separado, batching e eventual limitação de I/O): pendentes.
 - Evidência de syscall/stack e efeitos quantitativos: pendentes.
 - Hipóteses confirmadas/refutadas/não resolvidas: pendentes.
 - Evidências, limitações e decisões: pendentes.
@@ -215,6 +231,12 @@ Os experimentos anteriores são evidências exploratórias pré-pivô (seção 3
 Ao encerrar cada fase, preencher: data; objetivo; versão do código/imagem; configuração; runs e exposição; quantidade de episódios; resultados com unidades e incerteza; evidências; hipóteses sustentadas ou rejeitadas; limitações; decisão de passagem; próximo passo. Manter a evidência exploratória original separada dos resultados confirmatórios.
 
 Changelog:
+
+- 15/09/2026, fase 2: contrato e launcher da matriz principal preparados; 12 células mantidas; campanha bloqueada por preflight, dry-run, smoke e autorização.
+
+- 10/09/2026, fase 3A: concluído contraste pareado ext4/tmpfs em host/inline sob I/O; 425 misses/33 episódios no ext4 e zero no tmpfs.
+
+- 10/09/2026, fase 1: gates RT host/container e overhead na configuração científica concluídos; fase encerrada.
 
 - 09/09/2026, fase 1: recebida suite atual, preservado histórico, entregue sonda v2 e validação local; aguardando gate no cylon.
 

@@ -1,6 +1,6 @@
 # TDPS — fase 1, esquema 2
 
-Estado: implementação e validação funcional local; encerramento condicionado à validação RT host/container e overhead no cylon. Não executar a campanha principal com esta entrega. Data: 09/09/2026.
+Estado histórico desta entrega: implementação e validação funcional local em 09/09/2026. Os gates RT host/container e de overhead foram concluídos em 10/09/2026; consulte `TDPS_novo_foco_e_registro_das_fases.md`. A campanha principal continua separada em `../phase2/`.
 
 ## Auditoria e preservação
 
