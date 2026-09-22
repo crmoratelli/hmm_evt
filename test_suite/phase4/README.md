@@ -37,6 +37,8 @@ phase4/preflight_phase4.sh
 O pacote inclui também `test_suite/validate_environment.sh` com suporte ao gate
 `TDPS_REQUIRE_TRACING=0`. A alteração apenas pula verificações de tracing nas
 fases que explicitamente não coletam trace; os demais gates permanecem ativos.
+Os artefatos temporários são copiados sem tentar preservar o proprietário
+`root` do CSV produzido pelo benchmark privilegiado.
 
 ## Sequência obrigatória
 

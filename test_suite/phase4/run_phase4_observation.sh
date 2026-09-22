@@ -23,7 +23,7 @@ mkdir -p "${run_dir}" "${stage_dir}"
 completed=0
 cleanup() {
   rc=$?; set +e
-  if [[ -d "${stage_dir}" ]]; then cp -a "${stage_dir}/." "${run_dir}/" 2>/dev/null || true; rm -rf -- "${stage_dir:?}"; fi
+  if [[ -d "${stage_dir}" ]]; then cp -R "${stage_dir}/." "${run_dir}/" 2>/dev/null || true; rm -rf -- "${stage_dir:?}"; fi
   if (( ! completed )); then printf 'STATE=failed\nEXIT_CODE=%s\n' "${rc}" >> "${run_dir}/metadata.env" 2>/dev/null || true; : > "${run_dir}/FAILED"; fi
 }
 trap cleanup EXIT INT TERM
@@ -66,7 +66,7 @@ compare_irq_snapshots "${stage_dir}/managed_irqs_before.csv" "${stage_dir}/manag
 python3 "${PHASE4_DIR}/validate_phase4_run.py" --run-dir "${stage_dir}"
 printf 'VALID=1\nSTATE=completed\nCOMPLETED_AT=%s\n' "$(date -Is)" >> "${stage_dir}/metadata.env"
 : > "${stage_dir}/COMPLETED"
-cp -a "${stage_dir}/." "${run_dir}/"
+cp -R "${stage_dir}/." "${run_dir}/"
 rm -rf -- "${stage_dir:?}"
 completed=1
 trap - EXIT INT TERM
