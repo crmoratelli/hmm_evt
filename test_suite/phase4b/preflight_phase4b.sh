@@ -21,4 +21,3 @@ io_fs="$(findmnt -n -T "${PHASE4B_IO_TEMP_PATH}" -o FSTYPE)"
 [[ -x "${DIR}/periodic_v2" ]] || die "missing binary; run preflight without --check-only"
 printf 'phase4b_preflight=OK\nSOURCE_SHA256=%s\nBINARY_SHA256=%s\n' "$(sha256sum "${SUITE}/phase1/periodic_v2.c"|awk '{print $1}')" "$(sha256sum "${DIR}/periodic_v2"|awk '{print $1}')"
 printf 'PERIOD_NS=%s\nDEADLINE_NS=%s\nFULL_DURATION_S=%s\nREPLICATIONS=%s\n' "$PHASE4B_PERIOD_NS" "$PHASE4B_DEADLINE_NS" "$PHASE4B_DURATION_S" "$PHASE4B_REPLICATIONS"
-

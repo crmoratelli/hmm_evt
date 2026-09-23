@@ -3,6 +3,12 @@ from __future__ import annotations
 import argparse,math
 from pathlib import Path
 import pandas as pd
+def markdown_table(frame):
+ cols=list(frame.columns)
+ def clean(value): return str(value).replace('|','\\|').replace('\n',' ')
+ lines=['| '+' | '.join(map(clean,cols))+' |','| '+' | '.join('---' for _ in cols)+' |']
+ lines.extend('| '+' | '.join(clean(value) for value in row)+' |' for row in frame.itertuples(index=False,name=None))
+ return '\n'.join(lines)
 def meta(path):
  out={}
  for line in path.read_text().splitlines():
@@ -32,7 +38,6 @@ def main():
  if not runs: raise SystemExit('no completed runs')
  df=pd.DataFrame(runs); df.to_csv(a.root/'run_summary.csv',index=False)
  cell=df.groupby(['level','scenario'],as_index=False).agg(runs=('run','count'),jobs=('jobs','sum'),median_write_ns=('median_write_ns','median'),p99_write_ns=('p99_write_ns','median'),max_write_ns=('max_write_ns','max'),shock_jobs=('shock_jobs','sum'),local_deadline_misses=('local_deadline_misses','sum'),miss_episodes=('miss_episodes','sum'),mean_recurrence_accuracy=('recurrence_accuracy','mean'),recurrence_fp=('recurrence_fp','sum'),recurrence_fn=('recurrence_fn','sum')); cell.to_csv(a.root/'cell_summary.csv',index=False)
- report=['# TDPS Phase 4B - natural ext4 I/O shocks','',f'Valid runs: {len(df)}',f'Jobs: {int(df.jobs.sum())}',f'Shock threshold: {a.shock_threshold_ns} ns','', 'The deadline quantity is local completion: `output_finish_ns - release_ns`.','The recurrence model replays measured per-job inline service demand under a work-conserving periodic server.','',cell.to_markdown(index=False),'']
+ report=['# TDPS Phase 4B - natural ext4 I/O shocks','',f'Valid runs: {len(df)}',f'Jobs: {int(df.jobs.sum())}',f'Shock threshold: {a.shock_threshold_ns} ns','', 'The deadline quantity is local completion: `output_finish_ns - release_ns`.','The recurrence model replays measured per-job inline service demand under a work-conserving periodic server.','',markdown_table(cell),'']
  (a.root/'REPORT.md').write_text('\n'.join(report)); print(f'PHASE4B_ANALYSIS_COMPLETE={a.root} runs={len(df)} cells={len(cell)}')
 if __name__=='__main__':main()
-
