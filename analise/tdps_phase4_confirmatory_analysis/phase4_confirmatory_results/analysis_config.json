@@ -1,0 +1,47 @@
+{
+  "deadline_ns": 5000000,
+  "period_ns": 5000000,
+  "phase4a_archive": "upload/tdps_phase4_results(1).zip",
+  "phase4a_audit": {
+    "all_errors_within_one": true,
+    "archive_sha256": "485fa11aeb19a7303c93d72064d54ea04273b60530dd09681175d149b1034203",
+    "invalid_or_incomplete_runs": 0,
+    "runs": 250,
+    "schedule_hash_match": true,
+    "schedule_rows": 250,
+    "schedule_sha256_computed": "d5d9a093fa8d5f18e2bccab4da79737c997bae6141e7e55a0c77bc517a3d576a",
+    "schedule_sha256_registered": "d5d9a093fa8d5f18e2bccab4da79737c997bae6141e7e55a0c77bc517a3d576a"
+  },
+  "phase4a_sha256": "485fa11aeb19a7303c93d72064d54ea04273b60530dd09681175d149b1034203",
+  "phase4b_archive": "upload/tdps_phase4b_results.zip",
+  "phase4b_audit": {
+    "archive_sha256": "c649a6101165c99017db8cd9df98f42744b0a8620ab684433c01c1d846e0ab73",
+    "baseline_service_ns": {
+      "c06": 606349.5,
+      "c25": 2506354.5,
+      "c40": 4006302.0
+    },
+    "baseline_write_ns": {
+      "c06": 3550.0,
+      "c25": 3561.0,
+      "c40": 3560.0
+    },
+    "binary_hashes": [
+      "936b198629ee8520b1a9a7c52af4c70b956e5910a71eea00584e8a7ff8f5bd4e"
+    ],
+    "git_commits": [
+      "a346e3a40de8c933593dfbb10697d27167e2d2c5"
+    ],
+    "invalid_runs": 0,
+    "runs": 60,
+    "schedule_hash_match": true,
+    "schedule_rows": 60,
+    "schedule_sha256_computed": "1328db08373b6fb23448c1aa1d235da07bbc2b4e945274e8f6bb620c2d9f85b7",
+    "schedule_sha256_registered": "1328db08373b6fb23448c1aa1d235da07bbc2b4e945274e8f6bb620c2d9f85b7",
+    "source_hashes": [
+      "b9f64037c63540de421a8b39449a1f21fbf1043280ac8f12a3496511b4576cb2"
+    ]
+  },
+  "phase4b_sha256": "c649a6101165c99017db8cd9df98f42744b0a8620ab684433c01c1d846e0ab73",
+  "shock_threshold_ns": 1000000
+}

@@ -1,0 +1,8 @@
+family,test,contrast,estimate,ci_low,ci_high,statistic,p_value,p_value_holm
+shock incidence,Friedman shock counts across load levels,"c06,c25,c40",,,,2.0000000000000093,0.3678794411714408,0.3678794411714408
+paired t-tests,Paired t-test deadline misses by randomized block,c25-c06,111.8,-8.915662431799731,232.51566243179974,2.095081663025495,0.06564003047509272,0.06564003047509272
+paired t-tests,Paired t-test deadline misses by randomized block,c40-c25,490.2,143.02887598487973,837.3711240151202,3.194129247786702,0.010933845075413031,0.021867690150826062
+paired t-tests,Paired t-test deadline misses by randomized block,c40-c06,602.0,278.83668747845906,925.163312521541,4.214026033396799,0.0022593135077024484,0.006777940523107345
+Wilcoxon tests,Wilcoxon signed-rank deadline misses by randomized block,c25-c06,109.5,,,10.0,0.083984375,0.083984375
+Wilcoxon tests,Wilcoxon signed-rank deadline misses by randomized block,c40-c25,292.5,,,0.0,0.001953125,0.005859375
+Wilcoxon tests,Wilcoxon signed-rank deadline misses by randomized block,c40-c06,499.5,,,0.0,0.001953125,0.005859375

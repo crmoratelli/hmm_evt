@@ -1,0 +1,6 @@
+level,runs,exact_runs,within_1_runs,mae_jobs,observed_recovery_jobs,predicted_recovery_jobs
+c06,40,40,40,0.0,110,110
+c15,40,40,40,0.0,120,120
+c25,40,20,40,0.5,160,180
+c35,40,40,40,0.0,270,270
+c40,40,30,40,0.25,400,410
